@@ -12,5 +12,6 @@ namespace Helbreath.Launcher
     /// </summary>
     public partial class App : Application
     {
+
     }
 }

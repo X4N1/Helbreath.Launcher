@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using RestSharp;
 
 namespace Helbreath.Launcher
 {
@@ -19,9 +20,29 @@ namespace Helbreath.Launcher
     /// </summary>
     public partial class MainWindow : Window
     {
+        private const double CurrentVersion = 0.1;
+        private const double VersionFromInternet = 0.2;
+
         public MainWindow()
         {
             InitializeComponent();
+
+            //open file VERSION.txt
+            // read from file current version
+            // if version from internet is greater download changes
+            // copy zip
+            // unzip
+            // finish
+        }
+
+        public double GetCurrentVersion()
+        {
+            return CurrentVersion;
+        }
+
+        public void GetVersionFromInternet()
+        {
+            // read from webody =bsite
         }
     }
 }
