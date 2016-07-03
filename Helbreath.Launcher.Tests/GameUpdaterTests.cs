@@ -55,7 +55,5 @@ namespace Helbreath.Launcher.Tests
             //assert
             Assert.That(Directory.Exists(TestHelpers.GetTestDataFolder("TestData/my-game-patch-0.3")));
         }
-
-        
     }
 }

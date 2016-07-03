@@ -18,13 +18,14 @@ namespace Helbreath.Launcher.Tests
         [SetUp]
         public void Setup()
         {
+            TestHelpers.CleanupTestFolder();
             Mock<RestClient> restclientMock = new Mock<RestClient>();
             restclientMock.Setup(x => x.Execute(It.IsAny<IRestRequest>())).Returns(new RestResponse
             {
                 Content = "{ 'version' : 1 }"
             });
             var restclient = restclientMock.Object;
-            _versionProvider = new VersionProvider(restclient, TestHelpers.GetTestDataFolder("TestData"));
+            _versionProvider = new VersionProvider(restclient, TestHelpers.GetTestDataFolder("TestData/Version.json"));
         }
 
         [Test]
@@ -32,15 +33,15 @@ namespace Helbreath.Launcher.Tests
         {
             _versionProvider.GetVersionFromFile();
            
-            Assert.That(File.Exists(TestHelpers.GetTestDataFolder("TestData/Version.txt")));
+            Assert.That(File.Exists(TestHelpers.GetTestDataFolder("TestData/Version.json")));
         }
 
         [Test]
-        public void GetVersionFromFile_Then_Read_Version()
+        public void NonExisting_File_GetVersionFromFile_Then_Read_Version_Should_Return_Base_Version()
         {
             var result = _versionProvider.GetVersionFromFile();
            
-            Assert.AreEqual(1, result.Version);
+            Assert.AreEqual(0.1, result.Version);
         }
 
         [Test]
@@ -75,7 +76,7 @@ namespace Helbreath.Launcher.Tests
                 Content = jsonToReturn
             });
             var restclient = restclientMock.Object;
-            _versionProvider = new VersionProvider(restclient, TestHelpers.GetTestDataFolder("TestData/Version.txt"));
+            _versionProvider = new VersionProvider(restclient, TestHelpers.GetTestDataFolder("TestData/Version.json"));
 
             //act
             var result = _versionProvider.GetVersionFromInternet();
