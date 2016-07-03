@@ -4,6 +4,7 @@ using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using RestSharp;
+using RestSharp.Deserializers;
 using RestSharp.Extensions;
 
 namespace Helbreath.Launcher.Tests
@@ -92,9 +93,68 @@ namespace Helbreath.Launcher.Tests
             Assert.AreEqual(expectedVersion, result);
         }
 
+        [Test]
+        public void Check_For_Version_File_Then_CreateVersionFile()
+        {
+            //arrange
+            var fileName = "Version.txt";
+            bool result;
+            var versioncontent = "{'version': 0.1}";
+            //act
+            if (File.Exists(string.Format("C:/{0}", fileName)))
+            {
+                result = true;
+            }
+            else
+            {
+                result = false;
+            }
+            if (!result)
+            {
+                using (var stream = File.CreateText("C:/Version.txt"))
+                {
+                    stream.Write(versioncontent);
+                }
+            }
+
+            //assert
+            Assert.That(File.Exists("C:/Version.txt"));
+        }
+
+        [Test]
+        public void Check_For_Version_File_Then_ReadFile()
+        {
+            //arrange
+            var fileName = "Version.txt";
+            bool fileExist;
+            GameVersion result;
+
+            //act
+            if (File.Exists("C:/Version.txt"))
+            {
+                fileExist = true;
+            }
+            else
+            {
+                fileExist = false;
+            }
+            if (fileExist)
+            {
+                var content = File.ReadAllText("C:/Version.txt");
+                result = JsonConvert.DeserializeObject<GameVersion>(content);
+            }
+            else
+            {
+                result = new GameVersion();
+            }
+
+            //assert
+            Assert.AreEqual(1.0, result.Version);
+        }
+
         public class GameVersion
         {
-            public int Version { get; set; }
+            public decimal Version { get; set; }
         }
 
         public bool CheckVersion(double newerVersion, double oldVersion)
