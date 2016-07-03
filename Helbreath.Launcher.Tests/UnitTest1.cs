@@ -13,6 +13,21 @@ namespace Helbreath.Launcher.Tests
     [TestFixture]
     public class UnitTest1
     {
+
+        private IVersionProvider _versionProvider;
+
+        [SetUp]
+        public void Setup()
+        {
+            Mock<RestClient> restclientMock = new Mock<RestClient>();
+            restclientMock.Setup(x => x.Execute(It.IsAny<IRestRequest>())).Returns(new RestResponse
+            {
+                Content = "{ 'version' : 1 }"
+            });
+            var restclient = restclientMock.Object;
+            _versionProvider = new VersionProvider(restclient, "C:/Version.txt");
+        }
+
         [Test]
         public void Two_Versions_Then_Check_If_Newer_ReturnTrue()
         {
@@ -47,16 +62,8 @@ namespace Helbreath.Launcher.Tests
         public void Send_Request_To_Website_Then_Return_ReturnLastesVersion()
         {
             //arrange
-            Mock<RestClient> restclientMock = new Mock<RestClient>();
-            restclientMock.Setup(x => x.Execute(It.IsAny<IRestRequest>())).Returns(new RestResponse
-            {
-                Content = "{ 'version' : 1 }"
-            });
-            var restclient = restclientMock.Object;
-            var versionProvider = new VersionProvider(restclient);
-
             //act
-            var result = versionProvider.GetVersionFromInternet();
+            var result = _versionProvider.GetVersionFromInternet();
 
             //assert
             Assert.AreEqual(1, result.Version);
@@ -95,9 +102,8 @@ namespace Helbreath.Launcher.Tests
         public void Check_For_Version_File_Then_CreateVersionFile()
         {
             //arrange
-            var versionProvider = new VersionProvider(new RestClient("http://local.host.com"));
             //act
-            versionProvider.GetVersionFromFile();
+            _versionProvider.GetVersionFromFile();
 
             //assert
             Assert.That(File.Exists("C:/Version.txt"));
@@ -107,10 +113,8 @@ namespace Helbreath.Launcher.Tests
         public void Check_For_Version_File_Then_ReadFile()
         {
             //arrange
-            var versionProvider = new VersionProvider(new RestClient("http://local.host.com")); 
-
             //act
-            var result = versionProvider.GetVersionFromFile();
+            var result = _versionProvider.GetVersionFromFile();
 
             //assert
             Assert.AreEqual(0.5, result.Version);
@@ -125,92 +129,12 @@ namespace Helbreath.Launcher.Tests
             {
                 Version = newVersion
             };
-            var versionProvider = new VersionProvider(new RestClient("http://local.host.com"));
 
             //act
-            var result = versionProvider.UpdateVersionInFile(gameVersionToUpdate);
+            var result = _versionProvider.UpdateVersionInFile(gameVersionToUpdate);
 
             //assert
             Assert.AreEqual(newVersion, result.Version);
-        }
-
-        public interface IRemoteVersionProvider
-        {
-            GameVersion GetVersionFromInternet();
-        }
-
-        public interface ILocalVersionProvider
-        {
-            GameVersion GetVersionFromFile();
-
-            GameVersion UpdateVersionInFile(GameVersion gameVersion);
-        }
-
-        public class VersionProvider : IRemoteVersionProvider, ILocalVersionProvider
-        {
-            private readonly IRestClient _restClient;
-
-            private const double BaseVersion = 0.1;
-
-            public VersionProvider(IRestClient restClient)
-            {
-                this._restClient = restClient;
-            }
-
-            public GameVersion GetVersionFromInternet()
-            {
-                var restRequest = new RestRequest(Method.GET);
-                var response = _restClient.Get(restRequest);
-                var gameVersion = JsonConvert.DeserializeObject<GameVersion>(response.Content);
-                return gameVersion;
-            }
-
-            public GameVersion GetVersionFromFile()
-            {
-                GameVersion result;
-
-                if (!this.VersionFileExist())
-                {
-                    result = new GameVersion
-                    {
-                        Version = BaseVersion
-                    };
-                    using (var stream = File.CreateText("C:/Version.txt"))
-                    {
-                        var jsonToWrite = JsonConvert.SerializeObject(result);
-                        stream.Write(jsonToWrite);
-                    }
-                    return result;
-                }
-                else
-                {
-                    result = new GameVersion
-                    {
-                        Version = BaseVersion
-                    };
-                    var jsonToRead = File.ReadAllText("C:/Version.txt");
-                    result = JsonConvert.DeserializeObject<GameVersion>(jsonToRead);
-                }
-
-                return result;
-            }
-
-            public GameVersion UpdateVersionInFile(GameVersion gameVersion)
-            {
-                GameVersion result;
-                var jsonToWrite = JsonConvert.SerializeObject(gameVersion);
-                File.WriteAllText("C:/Version.txt", jsonToWrite);
-                var jsonToRead = File.ReadAllText("C:/Version.txt");
-                result = JsonConvert.DeserializeObject<GameVersion>(jsonToRead);
-                return result;
-            }
-
-            private bool VersionFileExist()
-            {
-                var fileName = "Version.txt";
-                var pathToFile = Path.Combine("C:/", fileName);
-                return File.Exists(pathToFile);
-            }
         }
 
         public class GameUpdater
