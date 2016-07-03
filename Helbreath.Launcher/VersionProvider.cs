@@ -16,6 +16,8 @@ namespace Helbreath.Launcher
 
         private const double BaseVersion = 0.1;
 
+        private const string VersionFile = "Version.txt";
+
         public VersionProvider(IRestClient restClient, string basePathToVersionFile)
         {
             this._restClient = restClient;

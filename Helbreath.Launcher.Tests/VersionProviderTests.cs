@@ -24,7 +24,7 @@ namespace Helbreath.Launcher.Tests
                 Content = "{ 'version' : 1 }"
             });
             var restclient = restclientMock.Object;
-            _versionProvider = new VersionProvider(restclient, "C:/Version.txt");
+            _versionProvider = new VersionProvider(restclient, TestHelpers.GetTestDataFolder("TestData"));
         }
 
         [Test]
@@ -32,7 +32,7 @@ namespace Helbreath.Launcher.Tests
         {
             _versionProvider.GetVersionFromFile();
            
-            Assert.That(File.Exists("C:/Version.txt"));
+            Assert.That(File.Exists(TestHelpers.GetTestDataFolder("TestData/Version.txt")));
         }
 
         [Test]
@@ -75,7 +75,7 @@ namespace Helbreath.Launcher.Tests
                 Content = jsonToReturn
             });
             var restclient = restclientMock.Object;
-            _versionProvider = new VersionProvider(restclient, "C:/Version.txt");
+            _versionProvider = new VersionProvider(restclient, TestHelpers.GetTestDataFolder("TestData/Version.txt"));
 
             //act
             var result = _versionProvider.GetVersionFromInternet();

@@ -15,29 +15,32 @@ namespace Helbreath.Launcher
     {
         private readonly IRestClient _restClient;
 
-        public GameUpdater(IRestClient restClient)
+        private readonly string _basePath;
+
+        public GameUpdater(IRestClient restClient, string basePath)
         {
             this._restClient = restClient;
+            this._basePath = basePath;
+            this.SetupCurrentCulture();
         }
 
         public bool DownloadFileFromServer(GameVersion gameVersion)
         {
-            var currentCulture = (System.Globalization.CultureInfo)CultureInfo.CurrentCulture.Clone();
-            currentCulture.NumberFormat.NumberDecimalSeparator = ".";
-            System.Threading.Thread.CurrentThread.CurrentCulture = currentCulture;
-
             var fileToDownload = $"my-game-patch-{gameVersion.Version}.zip";
+            var locationOfFileToSave = Path.Combine(_basePath, fileToDownload);
+
             var restRequest = new RestRequest(fileToDownload, Method.GET);
-            _restClient.DownloadData(restRequest).SaveAs($"C:/tempTest/{fileToDownload}");
-            return File.Exists($"C:/tempTest/{fileToDownload}");
+            _restClient.DownloadData(restRequest).SaveAs(locationOfFileToSave);
+
+            return File.Exists(locationOfFileToSave);
         }
 
         public void UnzipDownloadedFiles(GameVersion gameVersion)
         {
-            var outFolder = "C:/tempTest/";
-            var fileToUnzip = $"C:/tempTest/my-game-patch-{gameVersion.Version}.zip";
+            var fileToUnzip = $"my-game-patch-{gameVersion.Version}.zip";
+            var locationOfUnzip = Path.Combine(_basePath, fileToUnzip);
 
-            using (var streamToUnzip = File.OpenRead(fileToUnzip))
+            using (var streamToUnzip = File.OpenRead(locationOfUnzip))
             {
                 using (var zipInputStream = new ZipInputStream(streamToUnzip))
                 {
@@ -48,7 +51,7 @@ namespace Helbreath.Launcher
 
                         byte[] buffer = new byte[4096];
 
-                        var fullZipToPath = Path.Combine(outFolder, entryFileName);
+                        var fullZipToPath = Path.Combine(_basePath, entryFileName);
                         var directoryName = Path.GetDirectoryName(fullZipToPath);
 
                         if (directoryName.Length > 0)
@@ -76,6 +79,13 @@ namespace Helbreath.Launcher
             {
                 return false;
             }
+        }
+
+        private void SetupCurrentCulture()
+        {
+            var currentCulture = (System.Globalization.CultureInfo)CultureInfo.CurrentCulture.Clone();
+            currentCulture.NumberFormat.NumberDecimalSeparator = ".";
+            System.Threading.Thread.CurrentThread.CurrentCulture = currentCulture;
         }
     }
 }
