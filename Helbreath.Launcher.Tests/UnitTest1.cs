@@ -149,12 +149,45 @@ namespace Helbreath.Launcher.Tests
             }
 
             //assert
-            Assert.AreEqual(1.0, result.Version);
+            Assert.AreEqual(0.5, result.Version);
+        }
+
+        [Test]
+        public void Update_Version_File_With_New_Version()
+        {
+            //arrange
+            var newVersion = 0.5;
+            var gameVersionToUpdate = new GameVersion
+            {
+                Version = newVersion
+            };
+            var jsonToWrite = JsonConvert.SerializeObject(gameVersionToUpdate);
+            bool fileExist;
+
+            //act
+            if (File.Exists("C:/Version.txt"))
+            {
+                fileExist = true;
+            }
+            else
+            {
+                fileExist = false;
+            }
+
+            if (fileExist)
+            {
+                File.WriteAllText("C:/Version.txt", jsonToWrite);
+            }
+            var versionRead = File.ReadAllText("C:/Version.txt");
+            var versionResult = JsonConvert.DeserializeObject<GameVersion>(versionRead);
+
+            //assert
+            Assert.AreEqual(newVersion, versionResult.Version);
         }
 
         public class GameVersion
         {
-            public decimal Version { get; set; }
+            public double Version { get; set; }
         }
 
         public bool CheckVersion(double newerVersion, double oldVersion)
