@@ -97,19 +97,10 @@ namespace Helbreath.Launcher.Tests
         public void Check_For_Version_File_Then_CreateVersionFile()
         {
             //arrange
-            var fileName = "Version.txt";
-            bool result;
             var versioncontent = "{'version': 0.1}";
+
             //act
-            if (File.Exists(string.Format("C:/{0}", fileName)))
-            {
-                result = true;
-            }
-            else
-            {
-                result = false;
-            }
-            if (!result)
+            if (!this.VersionFileExist())
             {
                 using (var stream = File.CreateText("C:/Version.txt"))
                 {
@@ -130,15 +121,7 @@ namespace Helbreath.Launcher.Tests
             GameVersion result;
 
             //act
-            if (File.Exists("C:/Version.txt"))
-            {
-                fileExist = true;
-            }
-            else
-            {
-                fileExist = false;
-            }
-            if (fileExist)
+            if (this.VersionFileExist())
             {
                 var content = File.ReadAllText("C:/Version.txt");
                 result = JsonConvert.DeserializeObject<GameVersion>(content);
@@ -165,24 +148,23 @@ namespace Helbreath.Launcher.Tests
             bool fileExist;
 
             //act
-            if (File.Exists("C:/Version.txt"))
-            {
-                fileExist = true;
-            }
-            else
-            {
-                fileExist = false;
-            }
-
-            if (fileExist)
+            if (this.VersionFileExist())
             {
                 File.WriteAllText("C:/Version.txt", jsonToWrite);
             }
+
             var versionRead = File.ReadAllText("C:/Version.txt");
             var versionResult = JsonConvert.DeserializeObject<GameVersion>(versionRead);
 
             //assert
             Assert.AreEqual(newVersion, versionResult.Version);
+        }
+
+        private bool VersionFileExist()
+        {
+            var fileName = "Version.txt";
+            var pathToFile = Path.Combine("C:/", fileName);
+            return File.Exists(pathToFile);
         }
 
         public class GameVersion
