@@ -17,30 +17,30 @@ namespace Helbreath.Launcher.Tests
         public void Two_Versions_Then_Check_If_Newer_ReturnTrue()
         {
             // arrange
+            var gameUpdater = new GameUpdater();
             var oldVersion = 0.1;
             var newVersion = 0.2;
-            var isNewerFiles = true;
 
             // act
-            var result = this.CheckVersion(newVersion, oldVersion);
+            var result = gameUpdater.CheckVersion(newVersion, oldVersion);
 
             // assert
-            Assert.AreEqual(isNewerFiles, result);
+            Assert.AreEqual(true, result);
         }
 
         [Test]
         public void Two_Versions_Then_Check_If_Newer_ReturnFalse()
         {
             //arrange
+            var gameUpdater = new GameUpdater();
             var oldVersion = 0.2;
             var newVersion = 0.2;
-            var isNewerFiles = false;
 
             //act
-            var result = this.CheckVersion(newVersion, oldVersion);
+            var result = gameUpdater.CheckVersion(newVersion, oldVersion);
 
             //assert
-            Assert.AreEqual(isNewerFiles, result);
+            Assert.AreEqual(false, result);
         }
 
         [Test]
@@ -53,15 +53,13 @@ namespace Helbreath.Launcher.Tests
                 Content = "{ 'version' : 1 }"
             });
             var restclient = restclientMock.Object;
+            var versionProvider = new VersionProvider(restclient);
 
             //act
-            var result = restclient.Get(new RestRequest());
-
-            var resultVersion = JsonConvert.DeserializeObject<GameVersion>(result.Content);
+            var result = versionProvider.GetVersionFromInternet();
 
             //assert
-            Assert.AreEqual("{ 'version' : 1 }", result.Content);
-            Assert.AreEqual(1, resultVersion.Version);
+            Assert.AreEqual(1, result.Version);
         }
 
         [Test]
@@ -97,10 +95,11 @@ namespace Helbreath.Launcher.Tests
         public void Check_For_Version_File_Then_CreateVersionFile()
         {
             //arrange
+            var gameUpdater = new GameUpdater();
             var versioncontent = "{'version': 0.1}";
 
             //act
-            if (!this.VersionFileExist())
+            if (!gameUpdater.VersionFileExist())
             {
                 using (var stream = File.CreateText("C:/Version.txt"))
                 {
@@ -116,12 +115,11 @@ namespace Helbreath.Launcher.Tests
         public void Check_For_Version_File_Then_ReadFile()
         {
             //arrange
-            var fileName = "Version.txt";
-            bool fileExist;
+            var gameUpdater = new GameUpdater();
             GameVersion result;
 
             //act
-            if (this.VersionFileExist())
+            if (gameUpdater.VersionFileExist())
             {
                 var content = File.ReadAllText("C:/Version.txt");
                 result = JsonConvert.DeserializeObject<GameVersion>(content);
@@ -144,11 +142,11 @@ namespace Helbreath.Launcher.Tests
             {
                 Version = newVersion
             };
+            var gameUpdater = new GameUpdater();
             var jsonToWrite = JsonConvert.SerializeObject(gameVersionToUpdate);
-            bool fileExist;
-
+            
             //act
-            if (this.VersionFileExist())
+            if (gameUpdater.VersionFileExist())
             {
                 File.WriteAllText("C:/Version.txt", jsonToWrite);
             }
@@ -160,28 +158,49 @@ namespace Helbreath.Launcher.Tests
             Assert.AreEqual(newVersion, versionResult.Version);
         }
 
-        private bool VersionFileExist()
+        public class VersionProvider
         {
-            var fileName = "Version.txt";
-            var pathToFile = Path.Combine("C:/", fileName);
-            return File.Exists(pathToFile);
+            private readonly IRestClient _restClient;
+
+            public VersionProvider(IRestClient restClient)
+            {
+                this._restClient = restClient;
+            }
+
+            public GameVersion GetVersionFromInternet()
+            {
+                var restRequest = new RestRequest(Method.GET);
+                var response = _restClient.Get(restRequest);
+                var gameVersion = JsonConvert.DeserializeObject<GameVersion>(response.Content);
+                return gameVersion;
+            }
+        }
+
+        public class GameUpdater
+        {
+            public bool VersionFileExist()
+            {
+                var fileName = "Version.txt";
+                var pathToFile = Path.Combine("C:/", fileName);
+                return File.Exists(pathToFile);
+            }
+
+            public bool CheckVersion(double newerVersion, double oldVersion)
+            {
+                if (newerVersion > oldVersion)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
         }
 
         public class GameVersion
         {
             public double Version { get; set; }
-        }
-
-        public bool CheckVersion(double newerVersion, double oldVersion)
-        {
-            if (newerVersion > oldVersion)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
         }
     }
 }
