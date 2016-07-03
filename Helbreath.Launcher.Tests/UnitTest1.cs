@@ -1,11 +1,15 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using RestSharp;
 using RestSharp.Deserializers;
 using RestSharp.Extensions;
+using ICSharpCode.SharpZipLib.Core;
+using ICSharpCode.SharpZipLib.Zip;
 
 namespace Helbreath.Launcher.Tests
 {
@@ -13,26 +17,11 @@ namespace Helbreath.Launcher.Tests
     [TestFixture]
     public class UnitTest1
     {
-
-        private IVersionProvider _versionProvider;
-
-        [SetUp]
-        public void Setup()
-        {
-            Mock<RestClient> restclientMock = new Mock<RestClient>();
-            restclientMock.Setup(x => x.Execute(It.IsAny<IRestRequest>())).Returns(new RestResponse
-            {
-                Content = "{ 'version' : 1 }"
-            });
-            var restclient = restclientMock.Object;
-            _versionProvider = new VersionProvider(restclient, "C:/Version.txt");
-        }
-
         [Test]
         public void Two_Versions_Then_Check_If_Newer_ReturnTrue()
         {
             // arrange
-            var gameUpdater = new GameUpdater();
+            var gameUpdater = new GameUpdater(new RestClient("http://local.host.com"));
             var oldVersion = 0.1;
             var newVersion = 0.2;
 
@@ -47,7 +36,7 @@ namespace Helbreath.Launcher.Tests
         public void Two_Versions_Then_Check_If_Newer_ReturnFalse()
         {
             //arrange
-            var gameUpdater = new GameUpdater();
+            var gameUpdater = new GameUpdater(new RestClient("http://local.host.com"));
             var oldVersion = 0.2;
             var newVersion = 0.2;
 
@@ -59,29 +48,42 @@ namespace Helbreath.Launcher.Tests
         }
 
         [Test]
-        public void Send_Request_To_Website_Then_Return_ReturnLastesVersion()
+        public void DownloadFileFromServer_Then_Make_Sure_It_Exists()
         {
             //arrange
+            var client = new RestClient("https://s3-eu-west-1.amazonaws.com/helbreath-files/updates/");
+            var gameUpdater = new GameUpdater(client);
+            var gameVersion = new GameVersion
+            {
+                Version = 0.3
+            };
+
             //act
-            var result = _versionProvider.GetVersionFromInternet();
+            var result = gameUpdater.DownloadFileFromServer(gameVersion);
 
             //assert
-            Assert.AreEqual(1, result.Version);
+            Assert.That(result);
         }
 
         [Test]
-        public void GetUpdatesFromWebsite_Then_Download_And_Copy_To_Root_Folder()
+        public void DownloadFileFromServer_ThenUnzipFileToFolder()
         {
-            //arrange
-            var client = new RestClient("https://s3-eu-west-1.amazonaws.com/livecoding-tv/my-game-patch-0.3.txt");
-            var request = new RestRequest(Method.GET);
+            // arrange
+            var client = new RestClient("https://s3-eu-west-1.amazonaws.com/helbreath-files/updates/");
+            var gameUpdater = new GameUpdater(client);
+            var gameVersion = new GameVersion
+            {
+                Version = 0.3
+            };
 
             //act
-            client.DownloadData(request).SaveAs("C:/my-game-patch-0.3.txt");
-            var updateExist = File.Exists("C:/my-game-patch-0.3.txt");
+            if (gameUpdater.DownloadFileFromServer(gameVersion))
+            {
+                gameUpdater.UnzipDownloadedFiles(gameVersion);
+            }
 
             //assert
-            Assert.That(updateExist);
+            Assert.That(Directory.Exists("C:/tempTest/my-game-patch-0.3"));
         }
 
         [Test]
@@ -96,60 +98,6 @@ namespace Helbreath.Launcher.Tests
 
             //assert
             Assert.AreEqual(expectedVersion, result);
-        }
-
-        [Test]
-        public void Check_For_Version_File_Then_CreateVersionFile()
-        {
-            //arrange
-            //act
-            _versionProvider.GetVersionFromFile();
-
-            //assert
-            Assert.That(File.Exists("C:/Version.txt"));
-        }
-
-        [Test]
-        public void Check_For_Version_File_Then_ReadFile()
-        {
-            //arrange
-            //act
-            var result = _versionProvider.GetVersionFromFile();
-
-            //assert
-            Assert.AreEqual(0.5, result.Version);
-        }
-
-        [Test]
-        public void Update_Version_File_With_New_Version()
-        {
-            //arrange
-            var newVersion = 0.5;
-            var gameVersionToUpdate = new GameVersion
-            {
-                Version = newVersion
-            };
-
-            //act
-            var result = _versionProvider.UpdateVersionInFile(gameVersionToUpdate);
-
-            //assert
-            Assert.AreEqual(newVersion, result.Version);
-        }
-
-        public class GameUpdater
-        {
-            public bool CheckVersion(double newerVersion, double oldVersion)
-            {
-                if (newerVersion > oldVersion)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
         }
     }
 }
