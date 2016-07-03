@@ -90,6 +90,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="GameVersion.cs" />
     <Compile Include="ICurrentVersionProvider.cs" />
     <Compile Include="InMememoryCurrentVersionProvider.cs" />
     <Compile Include="MainWindow.xaml.cs">
