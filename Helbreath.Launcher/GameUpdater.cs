@@ -15,13 +15,36 @@ namespace Helbreath.Launcher
     {
         private readonly IRestClient _restClient;
 
+        private readonly IVersionProvider _versionProvider;
+
         private readonly string _basePath;
 
-        public GameUpdater(IRestClient restClient, string basePath)
+        public GameUpdater(IRestClient restClient, string basePath, IVersionProvider versionProvider)
         {
             this._restClient = restClient;
             this._basePath = basePath;
+            _versionProvider = versionProvider;
             this.SetupCurrentCulture();
+        }
+
+        public GameUpdaterResult Update()
+        {
+            var result = new GameUpdaterResult();
+            var localVersion = _versionProvider.GetVersionFromFile();
+            var remoteVersion = _versionProvider.GetVersionFromInternet();
+            var isUpdate = this.CheckVersion(remoteVersion.Version, localVersion.Version);
+
+            if (isUpdate)
+            {
+                if (this.DownloadFileFromServer(remoteVersion))
+                {
+                    this.UnzipDownloadedFiles(remoteVersion);
+                    result.GameVersion = _versionProvider.UpdateVersionInFile(remoteVersion);
+                    result.HasSucceed = true;
+                }
+            }
+
+            return result;
         }
 
         public bool DownloadFileFromServer(GameVersion gameVersion)

@@ -91,6 +91,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="GameUpdater.cs" />
+    <Compile Include="GameUpdaterResult.cs" />
     <Compile Include="GameVersionDoesntExistsException.cs" />
     <Compile Include="IVersionProvider.cs" />
     <Compile Include="VersionProvider.cs" />

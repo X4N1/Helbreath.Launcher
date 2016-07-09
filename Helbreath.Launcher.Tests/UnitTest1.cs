@@ -17,16 +17,27 @@ namespace Helbreath.Launcher.Tests
     [TestFixture]
     public class UnitTest1
     {
+        private GameUpdater gameUpdater;
+
+        [SetUp]
+        public void Setup()
+        {
+            var versionProvider = new VersionProvider(new RestClient(),
+                TestHelpers.GetTestDataFolder("TestData/Version.json"));
+
+            gameUpdater = new GameUpdater(new RestClient("http://local.host.com"),
+                TestHelpers.GetTestDataFolder("updates"), versionProvider);
+        }
+
         [Test]
         public void Two_Versions_Then_Check_If_Newer_ReturnTrue()
         {
             // arrange
-            var gameUpdater = new GameUpdater(new RestClient("http://local.host.com"), TestHelpers.GetTestDataFolder("updates"));
             var oldVersion = 0.1;
             var newVersion = 0.2;
 
             // act
-            var result = gameUpdater.CheckVersion(newVersion, oldVersion);
+            var result = this.gameUpdater.CheckVersion(newVersion, oldVersion);
 
             // assert
             Assert.AreEqual(true, result);
@@ -36,12 +47,11 @@ namespace Helbreath.Launcher.Tests
         public void Two_Versions_Then_Check_If_Newer_ReturnFalse()
         {
             //arrange
-            var gameUpdater = new GameUpdater(new RestClient("http://local.host.com"), TestHelpers.GetTestDataFolder("updates"));
             var oldVersion = 0.2;
             var newVersion = 0.2;
 
             //act
-            var result = gameUpdater.CheckVersion(newVersion, oldVersion);
+            var result = this.gameUpdater.CheckVersion(newVersion, oldVersion);
 
             //assert
             Assert.AreEqual(false, result);
