@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Moq;
 using NUnit.Framework;
 using RestSharp;
 
@@ -59,6 +60,52 @@ namespace Helbreath.Launcher.Tests
             }
 
             //assert
+        }
+
+        [Test]
+        public void UpdateGame_When_All_Correct()
+        {
+            // arrange
+            var restclientMock = new Mock<RestClient>();
+            restclientMock.Setup(x => x.Execute(It.IsAny<IRestRequest>())).Returns(new RestResponse
+            {
+                Content = "{ 'version' : 0.4 }"
+            });
+            var expectedGameVersion = new GameVersion
+            {
+                Version = 0.4
+            };
+            var gameUpdater = new GameUpdater(_restClient, TestHelpers.GetTestDataFolder("TestData"));
+            var versionProvider = new VersionProvider(restclientMock.Object, TestHelpers.GetTestDataFolder("TestData/Version.json"));
+            bool result;
+            GameVersion gameVersion = new GameVersion();
+
+            //act
+            var localVersion = versionProvider.GetVersionFromFile();
+            var remoteVersion = versionProvider.GetVersionFromInternet();
+            var isUpdate = gameUpdater.CheckVersion(remoteVersion.Version, localVersion.Version);
+
+            if (isUpdate)
+            {
+                if (gameUpdater.DownloadFileFromServer(remoteVersion))
+                {
+                    gameUpdater.UnzipDownloadedFiles(remoteVersion);
+                    gameVersion = versionProvider.UpdateVersionInFile(remoteVersion);
+                    result = true;
+                }
+                else
+                {
+                    result = false;
+                }
+            }
+            else
+            {
+                result = false;
+            }
+
+            // assert
+            Assert.That(result);
+            Assert.AreEqual(expectedGameVersion.Version, gameVersion.Version);
         }
         
     }
