@@ -51,19 +51,25 @@ namespace Helbreath.Launcher
 
                         byte[] buffer = new byte[4096];
 
-                        var fullZipToPath = Path.Combine(_basePath, entryFileName);
+                        var fullZipToPath = Path.Combine(_basePath, entryFileName).ToLower();
                         var directoryName = Path.GetDirectoryName(fullZipToPath);
 
                         if (directoryName.Length > 0)
                         {
                             Directory.CreateDirectory(directoryName);
                         }
-
-                        using (var streamWriter = File.Create(fullZipToPath))
+                        if (!fullZipToPath.Contains(".txt") && !fullZipToPath.Contains(".exe") && !fullZipToPath.Contains(".cfg"))
                         {
-                            StreamUtils.Copy(zipInputStream, streamWriter, buffer);
+                            zipEntry = zipInputStream.GetNextEntry();
                         }
-                        zipEntry = zipInputStream.GetNextEntry();
+                        else
+                        {
+                            using (var streamWriter = File.Create(fullZipToPath))
+                            {
+                                StreamUtils.Copy(zipInputStream, streamWriter, buffer);
+                            }
+                            zipEntry = zipInputStream.GetNextEntry();
+                        }
                     }
                 }
             }
@@ -80,7 +86,7 @@ namespace Helbreath.Launcher
                 return false;
             }
         }
-
+        
         private void SetupCurrentCulture()
         {
             var currentCulture = (System.Globalization.CultureInfo)CultureInfo.CurrentCulture.Clone();
