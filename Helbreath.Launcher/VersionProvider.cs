@@ -14,7 +14,7 @@ namespace Helbreath.Launcher
 
         private readonly string _basePathToVersionFile;
 
-        private const double BaseVersion = 0.1;
+        private const double BaseVersion = 0.0;
 
         public VersionProvider(IRestClient restClient, string basePathToVersionFile)
         {

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Helbreath.Launcher"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="Helbreath Poland Launcher" Height="350" Width="525">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="0.7*"></RowDefinition>
@@ -16,7 +16,20 @@
             <ColumnDefinition Width="0.4*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">Helbreath Poland Launcher - Website here</TextBlock>
-        <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">Updating your files...</TextBlock>
-        <Button Grid.Row="1" Grid.Column="1">Start Game</Button>
+        <Grid Grid.Row="1" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="0.5*"></RowDefinition>
+                <RowDefinition Height="0.5*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.4*"></ColumnDefinition>
+                <ColumnDefinition Width="0.6*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Status :..." ></TextBlock>
+            <TextBlock Grid.Row="0" Name="StatusOfWorkTextBlock" Grid.Column="1" Text="Starting application" ></TextBlock>
+            <TextBlock Grid.Row="1" Name="LocalVersionTextBlock" Grid.Column="0" Text="Local version : "></TextBlock>
+            <TextBlock Grid.Row="1" Name="RemoteVersionTextBlock" Grid.Column="1" Text="Remote version :"></TextBlock>
+        </Grid>
+        <Button Grid.Row="1" Grid.Column="1" Name="StartButton" Click="ButtonBase_OnClick" IsEnabled="False" >Start Game</Button>
     </Grid>
 </Window>

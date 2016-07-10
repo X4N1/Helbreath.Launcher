@@ -41,7 +41,7 @@ namespace Helbreath.Launcher.Tests
         {
             var result = _versionProvider.GetVersionFromFile();
            
-            Assert.AreEqual(0.1, result.Version);
+            Assert.AreEqual(0.0, result.Version);
         }
 
         [Test]
