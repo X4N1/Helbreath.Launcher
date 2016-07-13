@@ -49,6 +49,7 @@ namespace Helbreath.Launcher
 
         public bool DownloadFileFromServer(GameVersion gameVersion)
         {
+            this.SetupCurrentCulture();
             var fileToDownload = $"my-game-patch-{gameVersion.Version}.zip";
             var locationOfFileToSave = Path.Combine(_basePath, fileToDownload);
 
@@ -60,9 +61,9 @@ namespace Helbreath.Launcher
 
         public void UnzipDownloadedFiles(GameVersion gameVersion)
         {
+            this.SetupCurrentCulture();
             var fileToUnzip = $"my-game-patch-{gameVersion.Version}.zip";
             var locationOfUnzip = Path.Combine(_basePath, fileToUnzip);
-
             using (var streamToUnzip = File.OpenRead(locationOfUnzip))
             {
                 using (var zipInputStream = new ZipInputStream(streamToUnzip))

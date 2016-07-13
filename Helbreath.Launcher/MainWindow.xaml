@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Helbreath.Launcher"
         mc:Ignorable="d"
-        Title="Helbreath Poland Launcher" Height="350" Width="525">
+        Title="Helbreath Poland Launcher" Height="420" Width="620">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="0.7*"></RowDefinition>
@@ -15,6 +15,7 @@
             <ColumnDefinition Width="0.6*"></ColumnDefinition>
             <ColumnDefinition Width="0.4*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
+        <WebBrowser Name="WebBrowser" Grid.Row="0" Grid.ColumnSpan="2" ></WebBrowser>
         <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">Helbreath Poland Launcher - Website here</TextBlock>
         <Grid Grid.Row="1" Grid.Column="0">
             <Grid.RowDefinitions>

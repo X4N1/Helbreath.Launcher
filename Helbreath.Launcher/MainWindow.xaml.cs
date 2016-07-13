@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -15,6 +16,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using RestSharp;
+using Path = System.IO.Path;
 
 namespace Helbreath.Launcher
 {
@@ -38,20 +40,53 @@ namespace Helbreath.Launcher
         {
             InitializeComponent();
 
-            this._storageRestClient = new RestClient("http://google.com");
-            this._versionRestClient = new RestClient("http://google.com");
-            this._basePath = "~";
+            WebBrowser.Navigate(new Uri("http://helbreathpoland.com"));
+
+            this._storageRestClient = new RestClient("https://s3-eu-west-1.amazonaws.com/helbreath-files/updates/");
+            this._versionRestClient = new RestClient("http://version.helbreathpoland.com/");
+            this._basePath = Path.Combine(Directory.GetCurrentDirectory(), "Version.json");
             this._versionProvider = new VersionProvider(this._versionRestClient, this._basePath);
-            this._gameUpdater = new GameUpdater(this._storageRestClient, this._basePath, this._versionProvider);
+            this._gameUpdater = new GameUpdater(this._storageRestClient, Directory.GetCurrentDirectory(),
+                this._versionProvider);
+
+            var currentCulture = (System.Globalization.CultureInfo)CultureInfo.CurrentCulture.Clone();
+            currentCulture.NumberFormat.NumberDecimalSeparator = ".";
+            System.Threading.Thread.CurrentThread.CurrentCulture = currentCulture;
 
             this.Main();
         }
 
-        private void Main()
+        private async void Main()
         {
             this.SetCurrentVersion();
             this.SetRemoteVersion();
-            this.UpdateGame();
+
+            var isUpdate = this._gameUpdater.CheckVersion(this._versionProvider.GetVersionFromInternet().Version,
+               this._versionProvider.GetVersionFromFile().Version);
+
+            if (isUpdate)
+            {
+                var result = await Task.Factory.StartNew<GameUpdaterResult>(() =>
+                {
+                    return this._gameUpdater.Update();
+                });
+
+                if (result.HasSucceed)
+                {
+                    this.SetStatusOfWork("Game has been updated");
+                    StartButton.IsEnabled = true;
+                }
+                else
+                {
+                    this.SetStatusOfWork("Game has not been updated");
+                    MessageBox.Show("Game has not been updated correctly, please restart launcher");
+                }
+            }
+            else
+            {
+                StartButton.IsEnabled = true;
+                this.SetStatusOfWork("Game has already newest files, you can play");
+            }
         }
 
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
@@ -74,42 +109,15 @@ namespace Helbreath.Launcher
         private void SetCurrentVersion()
         {
             var version = this._versionProvider.GetVersionFromFile();
-            var message = string.Format("Local version : {0}", version);
+            var message = string.Format("Local version : {0}", version.Version);
             LocalVersionTextBlock.Text = message;
         }
 
         private void SetRemoteVersion()
         {
             var version = this._versionProvider.GetVersionFromInternet();
-            var message = string.Format("Local version : {0}", version);
+            var message = string.Format("Local version : {0}", version.Version);
             RemoteVersionTextBlock.Text = message;
-        }
-
-        private void UpdateGame()
-        {
-
-            var isUpdate = this._gameUpdater.CheckVersion(this._versionProvider.GetVersionFromInternet().Version,
-                this._versionProvider.GetVersionFromFile().Version);
-
-            if (isUpdate)
-            {
-                this.SetStatusOfWork("Downloading, and updating game");
-                if (this._gameUpdater.Update().HasSucceed)
-                {
-                    this.SetStatusOfWork("Game has been updated");
-                    StartButton.IsEnabled = true;
-                    MessageBox.Show("Game has been updated now you can play!");
-                }
-                else
-                {
-                    this.SetStatusOfWork("Game has not been updated");
-                    MessageBox.Show("Game has not been updated correctly, please restart launcher");
-                }
-            }
-            else
-            {
-                this.SetStatusOfWork("Game has already newest files, you can play");
-            }
         }
 
         private void SetStatusOfWork(string message)
