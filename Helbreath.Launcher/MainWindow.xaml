@@ -26,11 +26,11 @@
                 <ColumnDefinition Width="0.4*"></ColumnDefinition>
                 <ColumnDefinition Width="0.6*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <TextBlock Grid.Row="0" Grid.Column="0" Text="Status :..." ></TextBlock>
-            <TextBlock Grid.Row="0" Name="StatusOfWorkTextBlock" Grid.Column="1" Text="Starting application" ></TextBlock>
-            <TextBlock Grid.Row="1" Name="LocalVersionTextBlock" Grid.Column="0" Text="Local version : "></TextBlock>
-            <TextBlock Grid.Row="1" Name="RemoteVersionTextBlock" Grid.Column="1" Text="Remote version :"></TextBlock>
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Status :..." Foreground="#FF19A003" FontWeight="Bold" FontSize="15" ></TextBlock>
+            <TextBlock Grid.Row="0" Name="StatusOfWorkTextBlock" Grid.Column="1" Text="Starting application" FontSize="15" FontWeight="Bold" Foreground="#FF19A003" ></TextBlock>
+            <TextBlock Grid.Row="1" Name="LocalVersionTextBlock" Grid.Column="0" Text="Local version : " Foreground="#FF19A003" FontWeight="Bold" FontSize="15"></TextBlock>
+            <TextBlock Grid.Row="1" Name="RemoteVersionTextBlock" Grid.Column="1" Text="Remote version :" Foreground="#FF19A003" FontWeight="Bold" FontSize="15"></TextBlock>
         </Grid>
-        <Button Grid.Row="1" Grid.Column="1" Name="StartButton" Click="ButtonBase_OnClick" IsEnabled="False" >Start Game</Button>
+        <Button Grid.Row="1" Grid.Column="1" Name="StartButton" Click="ButtonBase_OnClick" IsEnabled="False" FontSize="35" Foreground="#FF441111" FontWeight="Bold" FontStyle="Italic" >Start Game</Button>
     </Grid>
 </Window>
